@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for aaronos-master-blueprint on 2025-10-13T19:15:43Z
+# fly.toml app configuration file generated for aaronos-master-blueprint-qbe70a on 2025-10-14T22:29:43Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'aaronos-master-blueprint'
+app = 'aaronos-master-blueprint-qbe70a'
 primary_region = 'iad'
 
 [build]
