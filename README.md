@@ -18,3 +18,11 @@ Open `index.html` in your browser. The page is fully self-contained with inline 
 - Buttons and form fields provide focus outlines that satisfy WCAG 2.1 AA contrast guidance.
 - Motion effects respect `prefers-reduced-motion` to reduce animation speed for sensitive users.
 - The layout is responsive down to small-screen breakpoints, stacking controls where space is limited.
+
+## Project Xavier Blueprint
+
+The repository includes [`project-xavier-blueprint.md`](project-xavier-blueprint.md), a comprehensive database, automation, agent, and dashboard template suite for recreating the Taskade-based Project Xavier platform inside a modular Bika.ai workspace. Use this document as a copy-and-paste reference when configuring tables, automations, and dashboards in your preferred no-code or low-code environment.
+
+## WCAG Machine Workflow
+
+Consult [`wcag-machine-workflow.md`](wcag-machine-workflow.md) for a step-by-step playbook covering how users and automations collaborate during the accessibility audit lifecycle—from initial domain intake and page discovery through automated scanning, AI summaries, report exports, and iterative monitoring.
