@@ -1,1 +1,13 @@
 fly.toml
+node_modules
+.git
+.output
+dist
+.env
+.env.local
+*.log
+.DS_Store
+.vscode
+.idea
+README.md
+.dockerignore
