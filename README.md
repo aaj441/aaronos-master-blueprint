@@ -1,20 +1,35 @@
-# AaronOS v5 Unified Dashboard
+# AaronOS – Unified Dashboard
 
-This repository contains a single-page prototype for the AaronOS v5 accessibility scanner dashboard. The experience demonstrates a five-step wizard that guides teams from keyword selection through exporting WCAG compliance reports.
+AaronOS is the unified codebase that powers the **Lucy** and **eBook Machine** modules. It merges the former XavierOS/Blue Ocean Explorer project under a single name and repository.
 
-## Features
+This monorepo contains a full‑stack application built with React (via Vinxi/TanStack Router) and a FastAPI backend. Use AaronOS to explore markets, generate strategic insights, and produce polished e‑books all from one place.
 
-- Glassmorphism-inspired interface that uses the Perplexity theme tokens defined in `theme-perplexity.css`.
-- Five-step wizard with accessible step indicators, keyboard-focus management, and ARIA attributes for assistive technologies.
-- Simulated scanning progress complete with timers, queue counts, and dynamic updates.
-- Drilldown step with sample WCAG issues and export controls that preview a success message.
+## Modules
+
+- **Lucy** – an AI research copilot for competitor analysis, market exploration, and strategy formulation.
+- **eBook Machine** – an automated e‑book generator that turns outlines into polished documents.
 
 ## Getting Started
 
-Open `index.html` in your browser. The page is fully self-contained with inline JavaScript for the wizard logic and references `theme-perplexity.css` for the shared design tokens.
+1. Clone this repository and install dependencies using `pnpm`:
+
+```bash
+pnpm install
+```
+
+2. Generate the Prisma client and start the development server:
+
+```bash
+pnpm dev
+```
+
+3. Navigate to the following routes to access each module:
+
+- `http://localhost:5173/lucy` – Lucy research dashboard
+- `http://localhost:5173/ebook-machine` – eBook Machine interface
 
 ## Development Notes
 
-- Buttons and form fields provide focus outlines that satisfy WCAG 2.1 AA contrast guidance.
-- Motion effects respect `prefers-reduced-motion` to reduce animation speed for sensitive users.
-- The layout is responsive down to small-screen breakpoints, stacking controls where space is limited.
+- The project requires Node >= 18 and pnpm >= 8 (see `package.json`).
+- Database migrations are managed via Prisma; update your `DATABASE_URL` in `.env` before running migrations.
+- For deployment instructions and environment variables, see `DEPLOY_TO_RAILWAY.md` and `XAVIEROS_README.md` from the old project.
