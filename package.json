@@ -12,13 +12,13 @@
     "dev": "vinxi dev",
     "build": "vinxi build",
     "start": "node .output/server/index.mjs",
+    "start:railway": "prisma migrate deploy && node .output/server/index.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . -c eslint.config.mjs --max-warnings 0",
     "db:generate": "prisma migrate dev",
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "format": "prettier --write .",
     "scheduler": "tsx src/server/scheduler.ts"
   },
   "dependencies": {
