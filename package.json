@@ -2,6 +2,7 @@
   "name": "aaron-os",
   "version": "1.0.0",
   "description": "AaronOS – Unified dashboard featuring Lucy and eBook Machine",
+  "type": "module",
   "engines": {
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
@@ -9,8 +10,8 @@
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "vinxi dev",
-    "build": "NODE_ENV=production tsr generate && NODE_ENV=production vinxi build",
-    "start": "vinxi start",
+    "build": "vinxi build",
+    "start": "node .output/server/index.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . -c eslint.config.mjs --max-warnings 0",
     "db:generate": "prisma migrate dev",
@@ -28,6 +29,7 @@
     "@trpc/server": "^11.0.0",
     "@prisma/client": "^5.20.0",
     "@anthropic-ai/sdk": "^0.32.0",
+    "@axe-core/puppeteer": "^4.10.2",
     "axios": "^1.7.9",
     "bcryptjs": "^2.4.3",
     "cheerio": "^1.0.0",
