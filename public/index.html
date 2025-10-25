@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AaronOS - Unified AI Platform</title>
+  <link rel="stylesheet" href="/theme-perplexity.css">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+</head>
+<body>
+  <nav class="main-nav">
+    <div class="nav-brand">
+      <a href="/">AaronOS</a>
+    </div>
+    <div class="nav-links">
+      <a href="#lucy">Lucy AI</a>
+      <a href="#ebook">eBook Machine</a>
+      <a href="#wcag">WCAG Scanner</a>
+      <a href="#health">System Health</a>
+    </div>
+  </nav>
+
+  <main>
+    <div id="app"></div>
+
+    <!-- Home Page Content -->
+    <div id="home-page">
+      <div class="page-container">
+        <header class="hero">
+          <h1>AaronOS</h1>
+          <p class="tagline">
+            Unified AI Platform for Research, Content Creation & Accessibility
+          </p>
+        </header>
+
+        <div class="modules-grid">
+          <div class="module-card">
+            <div class="module-icon">🔍</div>
+            <h3>Lucy AI Research</h3>
+            <p>Autonomous research agent for competitor analysis and market insights</p>
+            <div class="module-status healthy">
+              <span>●</span> Available
+            </div>
+          </div>
+
+          <div class="module-card">
+            <div class="module-icon">📚</div>
+            <h3>eBook Machine</h3>
+            <p>AI-powered eBook generation from outlines to finished documents</p>
+            <div class="module-status healthy">
+              <span>●</span> Available
+            </div>
+          </div>
+
+          <div class="module-card">
+            <div class="module-icon">♿</div>
+            <h3>WCAG Scanner</h3>
+            <p>Automated accessibility compliance scanning and reporting</p>
+            <div class="module-status healthy">
+              <span>●</span> Available
+            </div>
+          </div>
+        </div>
+
+        <div class="features">
+          <h2>Platform Features</h2>
+          <div class="features-grid">
+            <div class="feature-item">
+              <div class="feature-icon">🤖</div>
+              <h4>Autonomous Agents</h4>
+              <p>Self-running AI agents with progress tracking</p>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">💳</div>
+              <h4>Subscriptions</h4>
+              <p>Integrated billing with Stripe</p>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">🔐</div>
+              <h4>Authentication</h4>
+              <p>Secure user management</p>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">📊</div>
+              <h4>Health Monitoring</h4>
+              <p>Real-time system status</p>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">⏰</div>
+              <h4>Job Scheduler</h4>
+              <p>Automated tasks and backups</p>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">🔒</div>
+              <h4>Security</h4>
+              <p>Suspicious activity detection</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="system-status">
+          <h3>System Status</h3>
+          <div class="status-badge healthy">
+            ✓ All Systems Operational
+          </div>
+          <p class="status-time">Platform ready for deployment</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Simple client-side routing
+    function showPage(pageId) {
+      const pages = document.querySelectorAll('[id$="-page"]');
+      pages.forEach(page => page.style.display = 'none');
+      const targetPage = document.getElementById(pageId + '-page');
+      if (targetPage) targetPage.style.display = 'block';
+    }
+
+    // Initialize
+    showPage('home');
+
+    // Handle navigation
+    document.querySelectorAll('.nav-links a').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const page = link.getAttribute('href').substring(1);
+        showPage(page);
+        history.pushState({ page }, '', `/${page}`);
+      });
+    });
+
+    // Handle browser back/forward
+    window.addEventListener('popstate', (e) => {
+      const page = e.state?.page || 'home';
+      showPage(page);
+    });
+
+    // Check API health
+    fetch('/api/health')
+      .then(r => r.json())
+      .then(data => console.log('✅ API Health:', data))
+      .catch(e => console.error('❌ API Health Check Failed:', e));
+  </script>
+</body>
+</html>
