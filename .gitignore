@@ -6,3 +6,5 @@ dist/
 .env
 .DS_Store
 app/routeTree.gen.ts
+.vercel
+.railway
