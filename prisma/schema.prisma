@@ -1,0 +1,226 @@
+// Prisma schema for AaronOS unified platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User authentication and management
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  name          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+
+  // Relationships
+  subscription  Subscription?
+  sessions      Session[]
+  passwordResets PasswordReset[]
+  lucyResearch  LucyResearch[]
+  ebooks        Ebook[]
+  wcagScans     WcagScan[]
+
+  @@index([email])
+}
+
+// Session management
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  ipAddress String?
+  userAgent String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+// Password reset tokens
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  used      Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+}
+
+// Subscription and billing
+model Subscription {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  stripeCustomerId  String   @unique
+  stripeSubscriptionId String @unique
+  status            String   // active, canceled, past_due, trialing
+  plan              String   // basic, pro, enterprise
+  currentPeriodEnd  DateTime
+  cancelAtPeriodEnd Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments Payment[]
+
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+}
+
+// Payment history
+model Payment {
+  id               String   @id @default(cuid())
+  subscriptionId   String
+  stripePaymentId  String   @unique
+  amount           Int      // in cents
+  currency         String   @default("usd")
+  status           String   // succeeded, failed, pending
+  createdAt        DateTime @default(now())
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId])
+}
+
+// Lucy AI Research
+model LucyResearch {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  query       String
+  status      String   // pending, processing, completed, failed
+  progress    Int      @default(0)
+  results     Json?
+  insights    Json?
+  competitors Json?
+  marketData  Json?
+  error       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  completedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
+
+// eBook Machine
+model Ebook {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  outline     Json
+  content     Json?
+  status      String   // draft, generating, completed, failed
+  progress    Int      @default(0)
+  format      String   // pdf, epub, docx
+  fileUrl     String?
+  metadata    Json?
+  error       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  completedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
+
+// WCAG Scanner
+model WcagScan {
+  id          String   @id @default(cuid())
+  userId      String
+  targetUrl   String
+  domains     Json     // Array of domains to scan
+  status      String   // queued, scanning, completed, failed
+  progress    Int      @default(0)
+  results     Json?
+  issues      Json?
+  score       Float?
+  benchmark   String?
+  error       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  completedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
+
+// Job scheduling and monitoring
+model ScheduledJob {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  schedule    String   // cron expression
+  lastRunAt   DateTime?
+  lastStatus  String?  // success, failed
+  nextRunAt   DateTime?
+  enabled     Boolean  @default(true)
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  runs JobRun[]
+
+  @@index([enabled])
+  @@index([nextRunAt])
+}
+
+model JobRun {
+  id        String   @id @default(cuid())
+  jobId     String
+  status    String   // running, success, failed
+  startedAt DateTime @default(now())
+  endedAt   DateTime?
+  duration  Int?     // milliseconds
+  output    String?
+  error     String?
+
+  job ScheduledJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@index([status])
+}
+
+// Health monitoring
+model HealthCheck {
+  id          String   @id @default(cuid())
+  service     String
+  status      String   // healthy, degraded, unhealthy
+  responseTime Int?    // milliseconds
+  details     Json?
+  checkedAt   DateTime @default(now())
+
+  @@index([service])
+  @@index([checkedAt])
+}
+
+// Database backup tracking
+model DatabaseBackup {
+  id          String   @id @default(cuid())
+  filename    String
+  size        BigInt
+  status      String   // success, failed
+  duration    Int?     // seconds
+  error       String?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+}
