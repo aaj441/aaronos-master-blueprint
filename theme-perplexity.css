@@ -72,6 +72,8 @@ select {
   justify-content: center;
   gap: 0.5rem;
   transition: transform 0.15s ease, background-color 0.2s ease, color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .button:focus-visible {
@@ -115,6 +117,9 @@ select {
   color: #fff;
   padding: 0.75rem;
   width: 100%;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 input:focus-visible,
@@ -160,6 +165,8 @@ select:focus-visible {
   margin-top: 0.25rem;
   font-size: 0.75rem;
   color: inherit;
+  word-break: break-word;
+  line-height: 1.2;
 }
 
 .wizard-step {
@@ -222,10 +229,91 @@ select:focus-visible {
   header {
     flex-direction: column;
     align-items: flex-start;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+    margin: 0;
   }
 
   nav {
     flex-wrap: wrap;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  nav .button {
+    flex: 1;
+    min-width: 120px;
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
+  }
+
+  main {
+    padding: 1rem;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  .stepper {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .stepper button {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .stepper button::after {
+    content: attr(data-label);
+    font-size: 0.7rem;
+    margin-top: 0.25rem;
+  }
+
+  .wizard-grid {
+    gap: 1rem;
+  }
+
+  .discovery-list,
+  .issues-list {
+    gap: 0.5rem;
+  }
+
+  .discovery-list li,
+  .issues-list li {
+    padding: 0.75rem;
+  }
+
+  .scanning-summary {
+    gap: 0.5rem;
+  }
+
+  .scanning-summary div {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .filters {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .filters button {
+    flex: none;
+    width: 100%;
+  }
+
+  .export-options {
+    gap: 0.75rem;
+  }
+
+  .export-options label {
+    font-size: 0.9rem;
   }
 
   .button-group {
@@ -235,5 +323,75 @@ select:focus-visible {
 
   .button-group .button {
     width: 100%;
+  }
+
+  .progress-indicator {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+
+  .progress-indicator .spinner {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 0.75rem;
+  }
+
+  .status-log {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  header {
+    padding: 0.75rem;
+  }
+
+  main {
+    padding: 0.75rem;
+  }
+
+  .card {
+    padding: 0.75rem;
+  }
+
+  .stepper {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .stepper button {
+    padding: 1rem 0.5rem;
+  }
+
+  .stepper button::after {
+    font-size: 0.75rem;
+  }
+
+  .wizard-step h3 {
+    font-size: 1.25rem;
+  }
+
+  .wizard-step p {
+    font-size: 0.9rem;
+  }
+
+  .discovery-list li label,
+  .issues-list li {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .discovery-list li input[type="checkbox"] {
+    margin-right: 0.5rem;
+    transform: scale(1.2);
   }
 }
