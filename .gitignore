@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.vite/
+.vinxi/
+*.log
+.env
+.DS_Store
+app/routeTree.gen.ts
