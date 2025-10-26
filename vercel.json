@@ -1,0 +1,3 @@
+{
+  "//": "This file is intentionally minimal. The Vinxi preset for Vercel handles most deployment configurations automatically by generating a .vercel/output directory."
+}
