@@ -143,7 +143,7 @@
     <section class="card" aria-labelledby="scanner-wizard-title">
       <ol class="stepper" aria-label="WCAG scanner steps">
         <li>
-          <button type="button" class="button active" aria-current="step" data-step="1" data-label="Keywords" aria-controls="step-1">
+          <button type="button" class="button active" aria-current="step" data-step="1" data-label="Configure" aria-controls="step-1">
             <span class="sr-only">Step 1</span>
           </button>
         </li>
@@ -174,16 +174,55 @@
 
       <div class="wizard-grid" aria-live="polite">
         <article id="step-1" class="wizard-step active" role="tabpanel" aria-labelledby="step-label-1">
-          <h3 id="step-label-1">Step 1: Keywords &amp; Settings</h3>
-          <p>Enter the target domains you want to scan and choose an industry benchmark.</p>
-          <label for="target-domains" class="sr-only">Target domains</label>
-          <input id="target-domains" name="target-domains" type="text" placeholder="e.g., example.com, competitor.com">
-          <label for="benchmark" class="sr-only">Benchmark</label>
-          <select id="benchmark" name="benchmark">
-            <option value="finance">Finance Accessibility Benchmark</option>
-            <option value="retail">Retail Accessibility Benchmark</option>
-            <option value="education">Education Accessibility Benchmark</option>
-          </select>
+          <h3 id="step-label-1">Step 1: Configure Scan</h3>
+          <p>Choose your scan type and provide the source you want the AaronOS engine to audit.</p>
+          <form id="scan-form" class="scan-form">
+            <div class="form-group">
+              <span id="scan-type-label" class="form-label">Scan type</span>
+              <div class="radio-group" role="radiogroup" aria-labelledby="scan-type-label">
+                <div class="radio-option">
+                  <input type="radio" id="type-url" name="scanType" value="url" checked>
+                  <label for="type-url">Public URL</label>
+                </div>
+                <div class="radio-option">
+                  <input type="radio" id="type-html" name="scanType" value="html">
+                  <label for="type-html">HTML snippet</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group" id="url-input-group">
+              <label for="url-input">Website URL</label>
+              <input
+                type="url"
+                id="url-input"
+                name="url"
+                placeholder="https://example.com"
+                aria-describedby="url-hint"
+                required
+              >
+              <small id="url-hint" class="hint">Enter the full URL including https://</small>
+            </div>
+
+            <div class="form-group hidden" id="html-input-group">
+              <label for="html-input">HTML to audit</label>
+              <textarea
+                id="html-input"
+                name="html"
+                rows="8"
+                placeholder="Paste your HTML code here…"
+                aria-describedby="html-hint"
+              ></textarea>
+              <small id="html-hint" class="hint">We will run axe-core against this markup.</small>
+            </div>
+
+            <button type="submit" class="button btn-primary" id="scan-button">
+              <span class="btn-text">Queue scan</span>
+            </button>
+          </form>
+          <div class="status-log" id="scan-status" aria-live="polite">
+            <p>Provide a URL or HTML snippet to begin.</p>
+          </div>
         </article>
 
         <article id="step-2" class="wizard-step" role="tabpanel" aria-labelledby="step-label-2" aria-hidden="true">
@@ -229,11 +268,28 @@
 
         <article id="step-4" class="wizard-step" role="tabpanel" aria-labelledby="step-label-4" aria-hidden="true">
           <h3 id="step-label-4">Step 4: Overview</h3>
-          <p>Summary of the scan results compared to your selected benchmark.</p>
-          <div class="scanning-summary">
-            <div><span>Overall score</span><span id="overview-score">75%</span></div>
-            <div><span>High risk issues</span><span id="overview-high">4</span></div>
-            <div><span>Medium risk issues</span><span id="overview-medium">12</span></div>
+          <p>Review the automatically generated insights from the most recent scan.</p>
+          <div class="summary-cards" role="list">
+            <div class="card" role="listitem">
+              <h4>Compliance score</h4>
+              <div class="score" id="compliance-score">--</div>
+              <p class="card-subtitle">WCAG 2.2 AA coverage</p>
+            </div>
+            <div class="card" role="listitem">
+              <h4>Violations</h4>
+              <div class="count count-error" id="violations-count">0</div>
+              <p class="card-subtitle">Issues to remediate</p>
+            </div>
+            <div class="card" role="listitem">
+              <h4>Passes</h4>
+              <div class="count count-success" id="passes-count">0</div>
+              <p class="card-subtitle">WCAG checks passed</p>
+            </div>
+            <div class="card" role="listitem">
+              <h4>Scan time</h4>
+              <div class="time" id="scan-time">--</div>
+              <p class="card-subtitle">Duration to finish</p>
+            </div>
           </div>
           <div class="filters" role="group" aria-label="Filter results">
             <button type="button" class="button btn-secondary">Focus order</button>
@@ -245,27 +301,51 @@
 
         <article id="step-5" class="wizard-step" role="tabpanel" aria-labelledby="step-label-5" aria-hidden="true">
           <h3 id="step-label-5">Step 5: Drilldown &amp; Export</h3>
-          <p>Review issues by guideline and select your preferred export format.</p>
-          <ul class="issues-list">
-            <li>
-              <strong>WCAG 2.4.3 Focus Order</strong>
-              <p>Ensure focus order matches the visual order on pricing page.</p>
-            </li>
-            <li>
-              <strong>WCAG 1.4.3 Contrast (Minimum)</strong>
-              <p>Update CTA button colors to meet 4.5:1 contrast ratio.</p>
-            </li>
-            <li>
-              <strong>WCAG 3.3.1 Error Identification</strong>
-              <p>Add inline error messaging to the registration form.</p>
-            </li>
-          </ul>
-          <div class="export-options" role="group" aria-label="Export options">
-            <label><input type="radio" name="export" value="pdf" checked> PDF report</label>
-            <label><input type="radio" name="export" value="csv"> CSV issue log</label>
-            <label><input type="radio" name="export" value="json"> JSON for integrations</label>
+          <p>Investigate each violation cluster and export the dataset for engineering follow-up.</p>
+          <div class="severity-breakdown" aria-live="polite">
+            <h4>Violations by severity</h4>
+            <div class="severity-bars">
+              <div class="severity-item">
+                <label for="bar-critical">Critical</label>
+                <div class="bar-container">
+                  <div class="bar bar-critical" id="bar-critical" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+                  <span class="bar-count" id="count-critical">0</span>
+                </div>
+              </div>
+              <div class="severity-item">
+                <label for="bar-serious">Serious</label>
+                <div class="bar-container">
+                  <div class="bar bar-serious" id="bar-serious" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+                  <span class="bar-count" id="count-serious">0</span>
+                </div>
+              </div>
+              <div class="severity-item">
+                <label for="bar-moderate">Moderate</label>
+                <div class="bar-container">
+                  <div class="bar bar-moderate" id="bar-moderate" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+                  <span class="bar-count" id="count-moderate">0</span>
+                </div>
+              </div>
+              <div class="severity-item">
+                <label for="bar-minor">Minor</label>
+                <div class="bar-container">
+                  <div class="bar bar-minor" id="bar-minor" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+                  <span class="bar-count" id="count-minor">0</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <button type="button" class="button btn-primary" id="export-btn">Export report</button>
+
+          <div class="violations-section">
+            <h4>Detailed violations</h4>
+            <ul id="violations-list" class="issues-list"></ul>
+          </div>
+
+          <div class="export-section" role="group" aria-label="Export options">
+            <button type="button" class="button btn-secondary" id="export-json">Export JSON</button>
+            <button type="button" class="button btn-secondary" id="export-csv">Export CSV</button>
+            <button type="button" class="button btn-primary" id="export-btn">Export PDF report</button>
+          </div>
           <div class="status-log" aria-live="assertive" id="export-status">
             <p>No export requested yet.</p>
           </div>
@@ -284,15 +364,95 @@
     const stepButtons = Array.from(document.querySelectorAll('.stepper button'));
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
-    const statusLog = document.getElementById('export-status');
+    const exportStatus = document.getElementById('export-status');
     const exportBtn = document.getElementById('export-btn');
+    const exportJsonBtn = document.getElementById('export-json');
+    const exportCsvBtn = document.getElementById('export-csv');
     const scanTimer = document.getElementById('scan-timer');
     const pagesQueued = document.getElementById('pages-queued');
     const criticalErrors = document.getElementById('critical-errors');
     const warningCount = document.getElementById('warning-count');
+    const scanForm = document.getElementById('scan-form');
+    const scanStatus = document.getElementById('scan-status');
+    const urlInputGroup = document.getElementById('url-input-group');
+    const htmlInputGroup = document.getElementById('html-input-group');
+    const urlInput = document.getElementById('url-input');
+    const htmlInput = document.getElementById('html-input');
+    const complianceScore = document.getElementById('compliance-score');
+    const violationsCount = document.getElementById('violations-count');
+    const passesCount = document.getElementById('passes-count');
+    const scanTimeValue = document.getElementById('scan-time');
+    const severityBars = {
+      critical: document.getElementById('bar-critical'),
+      serious: document.getElementById('bar-serious'),
+      moderate: document.getElementById('bar-moderate'),
+      minor: document.getElementById('bar-minor')
+    };
+    const severityCounts = {
+      critical: document.getElementById('count-critical'),
+      serious: document.getElementById('count-serious'),
+      moderate: document.getElementById('count-moderate'),
+      minor: document.getElementById('count-minor')
+    };
+    const violationsList = document.getElementById('violations-list');
 
     let currentStep = 0;
     let scanInterval;
+    let resultsReady = false;
+
+    const sampleResults = {
+      complianceScore: 92,
+      violations: 14,
+      passes: 318,
+      scanTime: '3m 42s',
+      severity: {
+        critical: 3,
+        serious: 5,
+        moderate: 4,
+        minor: 2
+      },
+      issues: [
+        {
+          title: 'WCAG 2.4.7 Focus Visible',
+          severity: 'critical',
+          description: 'Primary navigation links remove outlines on focus, preventing keyboard users from tracking location.',
+          fix: 'Restore a visible focus ring with at least a 3:1 contrast ratio.',
+          target: 'nav.primary-menu a',
+          instances: 3
+        },
+        {
+          title: 'WCAG 1.4.3 Contrast (Minimum)',
+          severity: 'serious',
+          description: 'Hero call-to-action text sits on a gradient with insufficient 2.8:1 contrast.',
+          fix: 'Increase text color contrast to at least 4.5:1 or adjust the background tone.',
+          target: '.hero .cta-button',
+          instances: 5
+        },
+        {
+          title: 'WCAG 3.3.2 Labels or Instructions',
+          severity: 'moderate',
+          description: 'Checkout form inputs do not have programmatic labels, impacting screen reader flows.',
+          fix: 'Associate <label> elements with inputs using matching for/id attributes.',
+          target: '#checkout-form input',
+          instances: 4
+        },
+        {
+          title: 'WCAG 1.1.1 Non-text Content',
+          severity: 'minor',
+          description: 'Decorative icons include redundant alt text that creates noise for assistive tech.',
+          fix: 'Mark decorative images with empty alt attributes or role="presentation".',
+          target: '.feature-icon img',
+          instances: 2
+        }
+      ]
+    };
+
+    const severityLabels = {
+      critical: 'Critical',
+      serious: 'Serious',
+      moderate: 'Moderate',
+      minor: 'Minor'
+    };
 
     function setStep(newStep, options = {}) {
       const { focusPanel = false } = options;
@@ -331,6 +491,10 @@
           focusable.focus({ preventScroll: true });
         }
       }
+
+      if (newStep >= 3 && resultsReady) {
+        populateResults();
+      }
     }
 
     function handleStepperClick(event) {
@@ -343,11 +507,117 @@
       }
     }
 
+    function handleScanTypeChange() {
+      const selected = document.querySelector('input[name="scanType"]:checked')?.value ?? 'url';
+      const isHtml = selected === 'html';
+      urlInputGroup.classList.toggle('hidden', isHtml);
+      htmlInputGroup.classList.toggle('hidden', !isHtml);
+      urlInput.required = !isHtml;
+      htmlInput.required = isHtml;
+    }
+
+    function handleScanSubmit(event) {
+      event.preventDefault();
+      const selected = document.querySelector('input[name="scanType"]:checked')?.value ?? 'url';
+      const inputValue = selected === 'html' ? htmlInput.value.trim() : urlInput.value.trim();
+      const descriptor = selected === 'html' ? 'HTML snippet' : 'URL';
+      const summaryTarget = selected === 'html' ? 'provided markup' : inputValue || 'your target';
+      scanStatus.innerHTML = `<p>Queued ${descriptor} scan for <strong>${summaryTarget}</strong>.</p>`;
+      setTimeout(() => setStep(1, { focusPanel: true }), 400);
+    }
+
+    function resetResults() {
+      complianceScore.textContent = '--';
+      violationsCount.textContent = '0';
+      passesCount.textContent = '0';
+      scanTimeValue.textContent = '--';
+      Object.values(severityCounts).forEach((el) => {
+        el.textContent = '0';
+      });
+      Object.values(severityBars).forEach((bar) => {
+        bar.style.setProperty('--progress', 0);
+        bar.setAttribute('aria-valuenow', '0');
+      });
+      violationsList.innerHTML = '';
+      exportStatus.innerHTML = '<p>No export requested yet.</p>';
+    }
+
+    function populateResults() {
+      complianceScore.textContent = `${sampleResults.complianceScore}%`;
+      violationsCount.textContent = String(sampleResults.violations);
+      passesCount.textContent = String(sampleResults.passes);
+      scanTimeValue.textContent = sampleResults.scanTime;
+      updateSeverityBars(sampleResults.severity);
+      renderViolations(sampleResults.issues);
+    }
+
+    function updateSeverityBars(severity) {
+      const total = Object.values(severity).reduce((sum, value) => sum + value, 0);
+      Object.entries(severity).forEach(([level, count]) => {
+        const percent = total ? Math.round((count / total) * 100) : 0;
+        severityBars[level].style.setProperty('--progress', percent / 100);
+        severityBars[level].setAttribute('aria-valuenow', String(percent));
+        severityCounts[level].textContent = String(count);
+      });
+    }
+
+    function renderViolations(issues) {
+      violationsList.innerHTML = '';
+      issues.forEach((issue) => {
+        const item = document.createElement('li');
+
+        const header = document.createElement('div');
+        header.className = 'violation-header';
+
+        const title = document.createElement('strong');
+        title.textContent = issue.title;
+        header.appendChild(title);
+
+        const badge = document.createElement('span');
+        badge.className = `badge badge-${issue.severity}`;
+        badge.textContent = severityLabels[issue.severity] ?? issue.severity;
+        header.appendChild(badge);
+
+        item.appendChild(header);
+
+        const description = document.createElement('p');
+        description.textContent = issue.description;
+        item.appendChild(description);
+
+        if (issue.target) {
+          const target = document.createElement('p');
+          target.className = 'hint';
+          target.innerHTML = `Affected element: <code>${issue.target}</code>`;
+          item.appendChild(target);
+        }
+
+        if (issue.fix) {
+          const fix = document.createElement('p');
+          fix.className = 'hint';
+          fix.textContent = `Fix suggestion: ${issue.fix}`;
+          item.appendChild(fix);
+        }
+
+        if (issue.instances) {
+          const count = document.createElement('p');
+          count.className = 'hint';
+          count.textContent = `Occurrences: ${issue.instances}`;
+          item.appendChild(count);
+        }
+
+        violationsList.appendChild(item);
+      });
+    }
+
     function simulateScanProgress() {
       scanTimer.textContent = '45';
       pagesQueued.textContent = '18';
       criticalErrors.textContent = '0';
       warningCount.textContent = '0';
+
+      resultsReady = false;
+      resetResults();
+      scanStatus.innerHTML = '<p>Scan running… we will notify you when the overview is ready.</p>';
 
       let timeRemaining = 45;
       let queued = 18;
@@ -358,17 +628,24 @@
           timeRemaining -= 1;
           scanTimer.textContent = String(timeRemaining);
           if (queued > 0 && timeRemaining % 5 === 0) {
-            queued -= 2;
-            pagesQueued.textContent = String(Math.max(queued, 0));
+            queued = Math.max(queued - 3, 0);
+            pagesQueued.textContent = String(queued);
           }
-          if (timeRemaining % 9 === 0) {
+          if (timeRemaining % 11 === 0) {
+            criticalErrors.textContent = String(parseInt(criticalErrors.textContent, 10) + 1);
+          }
+          if (timeRemaining % 7 === 0) {
             warningCount.textContent = String(parseInt(warningCount.textContent, 10) + 1);
           }
         } else {
           clearInterval(scanInterval);
-          criticalErrors.textContent = '2';
-          warningCount.textContent = '6';
+          scanInterval = undefined;
           pagesQueued.textContent = '0';
+          criticalErrors.textContent = String(sampleResults.severity.critical);
+          warningCount.textContent = String(sampleResults.violations - sampleResults.severity.critical);
+          resultsReady = true;
+          populateResults();
+          scanStatus.innerHTML = '<p>✅ Scan completed. Review the overview and drilldown for details.</p>';
           setTimeout(() => setStep(3, { focusPanel: true }), 400);
         }
       }, 1000);
@@ -384,7 +661,7 @@
       if (currentStep < steps.length - 1) {
         setStep(currentStep + 1, { focusPanel: true });
       } else {
-        statusLog.innerHTML = '<p>Wizard complete. Ready to export or restart.</p>';
+        exportStatus.innerHTML = '<p>Wizard complete. Ready to export or restart.</p>';
       }
     }
 
@@ -394,19 +671,31 @@
       }
     }
 
-    function handleExport() {
-      statusLog.innerHTML = '<p>Preparing your report…</p>';
+    function handleExport(type) {
+      const labels = {
+        pdf: 'PDF report',
+        json: 'JSON data',
+        csv: 'CSV log'
+      };
+      exportStatus.innerHTML = `<p>Preparing your ${labels[type] ?? type}…</p>`;
       setTimeout(() => {
-        statusLog.innerHTML = '<p>✅ Export complete. Your PDF report is ready!</p>';
+        exportStatus.innerHTML = `<p>✅ ${labels[type] ?? type} ready for download.</p>`;
       }, 1200);
     }
 
     prevBtn.addEventListener('click', handlePrev);
     nextBtn.addEventListener('click', handleNext);
-    exportBtn.addEventListener('click', handleExport);
+    exportBtn.addEventListener('click', () => handleExport('pdf'));
+    exportJsonBtn.addEventListener('click', () => handleExport('json'));
+    exportCsvBtn.addEventListener('click', () => handleExport('csv'));
     document.querySelector('.stepper').addEventListener('click', handleStepperClick);
+    scanForm.addEventListener('submit', handleScanSubmit);
+    document.querySelectorAll('input[name="scanType"]').forEach((radio) => {
+      radio.addEventListener('change', handleScanTypeChange);
+    });
 
     setStep(currentStep, { focusPanel: true });
+    handleScanTypeChange();
   </script>
 </body>
 </html>
