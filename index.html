@@ -3,12 +3,316 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AaronOS v5 – Unified Dashboard</title>
+  <title>Project Xavier Migration Workflow Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="theme-perplexity.css">
   <style>
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(12px);
+      background: rgba(30, 41, 59, 0.92);
+    }
+
+    header h1 {
+      margin: 0;
+      color: #fff;
+      font-size: 1.6rem;
+      letter-spacing: 0.03em;
+    }
+
+    main {
+      width: min(1280px, 100%);
+      padding: 2rem;
+      margin-bottom: 4rem;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      color: #fff;
+      font-size: 1.25rem;
+      letter-spacing: 0.02em;
+    }
+
+    .card h3 {
+      margin: 1.5rem 0 1rem;
+      color: #fff;
+      font-size: 1.1rem;
+    }
+
+    .grid-two {
+      display: grid;
+      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      margin-bottom: 1.5rem;
+    }
+
+    .grid-three {
+      display: grid;
+      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .filters-panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .filters-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .filters-group label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.85rem;
+      gap: 0.35rem;
+      color: var(--color-secondary-text);
+    }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(148, 163, 184, 0.1);
+      border-radius: 999px;
+      padding: 0.35rem 0.75rem;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      cursor: pointer;
+      transition: transform 0.15s ease, background-color 0.2s ease;
+    }
+
+    .toggle input {
+      width: auto;
+      accent-color: var(--color-primary);
+    }
+
+    .toggle:hover {
+      transform: translateY(-1px);
+    }
+
+    .diagram-wrapper {
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 12px;
+      padding: 1rem;
+      background: rgba(15, 23, 42, 0.35);
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+    }
+
+    svg [data-node] {
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+
+    svg [data-node]:hover {
+      transform: scale(1.03);
+    }
+
+    .active-diagram-node {
+      stroke: #facc15 !important;
+      stroke-width: 3 !important;
+      filter: drop-shadow(0 0 12px rgba(250, 204, 21, 0.4));
+    }
+
+    .diagram-info {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 10px;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      color: #e2e8f0;
+      min-height: 82px;
+    }
+
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    .matrix-table th,
+    .matrix-table td {
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      padding: 0.75rem;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    .matrix-table th {
+      background: rgba(99, 102, 241, 0.12);
+      color: #e0e7ff;
+    }
+
+    .matrix-table td.status {
+      width: 140px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      border-radius: 999px;
+      padding: 0.25rem 0.7rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .status-active {
+      background: rgba(20, 184, 166, 0.15);
+      color: #5eead4;
+      border: 1px solid rgba(20, 184, 166, 0.4);
+    }
+
+    .status-paused {
+      background: rgba(245, 158, 11, 0.15);
+      color: #facc15;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .legend {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      font-size: 0.85rem;
+      color: #cbd5f5;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .legend span::before {
+      content: '';
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      background: currentColor;
+    }
+
+    .progress-indicator {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
+      margin: 1rem 0;
+    }
+
+    .progress-indicator div {
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      background: rgba(148, 163, 184, 0.08);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .progress-indicator strong {
+      display: block;
+      color: #fff;
+      margin-bottom: 0.35rem;
+    }
+
+    .gantt-track {
+      position: relative;
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 10px;
+      background: rgba(148, 163, 184, 0.08);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .gantt-row {
+      position: relative;
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      gap: 0.75rem;
+    }
+
+    .gantt-label {
+      width: 140px;
+      color: #e2e8f0;
+      font-size: 0.9rem;
+    }
+
+    .gantt-bar {
+      flex: 1;
+      position: relative;
+      height: 22px;
+      border-radius: 6px;
+      background: rgba(99, 102, 241, 0.12);
+    }
+
+    .gantt-bar span {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      border-radius: 6px;
+      background: linear-gradient(90deg, rgba(99, 102, 241, 0.9), rgba(124, 58, 237, 0.85));
+    }
+
+    .gantt-bar[data-status="Completed"] span { background: rgba(20, 184, 166, 0.85); }
+    .gantt-bar[data-status="In Progress"] span { background: linear-gradient(90deg, rgba(99, 102, 241, 0.85), rgba(59, 130, 246, 0.85)); }
+    .gantt-bar[data-status="Blocked"] span { background: rgba(239, 68, 68, 0.85); }
+
+    @keyframes pulseBorder {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+      70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .pulse {
+      animation: pulseBorder 0.85s ease-out 3;
+    }
+
+    .validation-results {
+      display: grid;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .validation-results div {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .team-metrics {
+      display: grid;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .team-metrics div {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      background: rgba(148, 163, 184, 0.08);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
     .sr-only {
       position: absolute;
       width: 1px;
@@ -21,392 +325,983 @@
       border: 0;
     }
 
-    .card h2 {
-      margin-top: 0;
-      color: #fff;
-      font-size: 1.5rem;
-    }
-
-    .card p {
-      margin: 0.5rem 0 1rem;
-      line-height: 1.6;
-    }
-
-    .wizard-grid {
-      display: grid;
-      gap: 1.5rem;
-    }
-
-    .discovery-list,
-    .issues-list {
-      display: grid;
-      gap: 0.75rem;
-      padding: 0;
-      margin: 0;
-      list-style: none;
-    }
-
-    .discovery-list li,
-    .issues-list li {
-      padding: 1rem;
-      border-radius: 8px;
-      background: rgba(148, 163, 184, 0.08);
-      border: 1px solid rgba(148, 163, 184, 0.2);
-    }
-
-    .issues-list strong {
-      color: #fff;
-    }
-
-    .stepper button {
-      counter-increment: step;
-    }
-
-    .stepper button::before {
-      content: counter(step);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 2rem;
-      height: 2rem;
-      margin-bottom: 0.35rem;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.1);
-      color: inherit;
-      font-weight: 600;
-    }
-
-    .scanning-summary {
-      display: grid;
-      gap: 0.75rem;
-    }
-
-    .scanning-summary div {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      background: rgba(20, 184, 166, 0.08);
-      border: 1px solid rgba(20, 184, 166, 0.25);
-      color: #fff;
-      font-weight: 600;
-    }
-
-    .filters {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
-
-    .filters button {
-      flex: 1 1 160px;
-    }
-
-    .export-options {
-      display: grid;
-      gap: 1rem;
-    }
-
-    .export-options label {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .export-options input {
-      width: auto;
-    }
-
     @media (max-width: 768px) {
-      .stepper {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+      header {
+        flex-direction: column;
+        align-items: flex-start;
       }
 
-      .stepper button::after {
-        content: '';
+      nav {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      .gantt-label {
+        width: 100px;
       }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>AaronOS v5</h1>
+    <h1>Project Xavier Migration Command Center</h1>
     <nav aria-label="Primary navigation">
-      <button type="button" class="button btn-secondary">Dashboard</button>
-      <button type="button" class="button btn-secondary">Scanner</button>
-      <button type="button" class="button btn-secondary">Outreach</button>
+      <button type="button" class="button btn-secondary">Workflow</button>
+      <button type="button" class="button btn-secondary">Data Quality</button>
+      <button type="button" class="button btn-secondary">Automation</button>
+      <button type="button" class="button btn-secondary">Performance</button>
     </nav>
   </header>
 
   <main>
-    <section class="card" aria-labelledby="scanner-wizard-title">
-      <ol class="stepper" aria-label="WCAG scanner steps">
-        <li>
-          <button type="button" class="button active" aria-current="step" data-step="1" data-label="Keywords" aria-controls="step-1">
-            <span class="sr-only">Step 1</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" class="button" data-step="2" data-label="Discovery" aria-controls="step-2">
-            <span class="sr-only">Step 2</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" class="button" data-step="3" data-label="Scanning" aria-controls="step-3">
-            <span class="sr-only">Step 3</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" class="button" data-step="4" data-label="Overview" aria-controls="step-4">
-            <span class="sr-only">Step 4</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" class="button" data-step="5" data-label="Drilldown" aria-controls="step-5">
-            <span class="sr-only">Step 5</span>
-          </button>
-        </li>
-      </ol>
-
-      <h2 id="scanner-wizard-title">WCAG Scanner Wizard</h2>
-      <p id="wizard-description">Configure your accessibility scan, monitor progress, and export actionable reports.</p>
-
-      <div class="wizard-grid" aria-live="polite">
-        <article id="step-1" class="wizard-step active" role="tabpanel" aria-labelledby="step-label-1">
-          <h3 id="step-label-1">Step 1: Keywords &amp; Settings</h3>
-          <p>Enter the target domains you want to scan and choose an industry benchmark.</p>
-          <label for="target-domains" class="sr-only">Target domains</label>
-          <input id="target-domains" name="target-domains" type="text" placeholder="e.g., example.com, competitor.com">
-          <label for="benchmark" class="sr-only">Benchmark</label>
-          <select id="benchmark" name="benchmark">
-            <option value="finance">Finance Accessibility Benchmark</option>
-            <option value="retail">Retail Accessibility Benchmark</option>
-            <option value="education">Education Accessibility Benchmark</option>
-          </select>
-        </article>
-
-        <article id="step-2" class="wizard-step" role="tabpanel" aria-labelledby="step-label-2" aria-hidden="true">
-          <h3 id="step-label-2">Step 2: Discovery</h3>
-          <p>Select the domains you'd like to include in the scan.</p>
-          <ul class="discovery-list">
-            <li>
-              <label>
-                <input type="checkbox" name="domain" value="example.com" checked>
-                example.com – Official site
-              </label>
-            </li>
-            <li>
-              <label>
-                <input type="checkbox" name="domain" value="inclusivedesign.io">
-                inclusivedesign.io – Accessibility insights blog
-              </label>
-            </li>
-            <li>
-              <label>
-                <input type="checkbox" name="domain" value="accessibility.gov">
-                accessibility.gov – Compliance resources
-              </label>
-            </li>
-          </ul>
-        </article>
-
-        <article id="step-3" class="wizard-step" role="tabpanel" aria-labelledby="step-label-3" aria-hidden="true">
-          <h3 id="step-label-3">Step 3: Scanning</h3>
-          <div class="progress-indicator">
-            <div class="spinner" role="progressbar" aria-valuetext="Scanning in progress"></div>
-            <div>
-              <p>Scanning in progress…</p>
-              <p aria-live="assertive">Estimated time remaining: <span id="scan-timer">45</span> seconds</p>
-            </div>
-          </div>
-          <div class="scanning-summary">
-            <div><span>Pages queued</span><span id="pages-queued">18</span></div>
-            <div><span>Critical errors</span><span id="critical-errors">0</span></div>
-            <div><span>Warnings</span><span id="warning-count">0</span></div>
-          </div>
-        </article>
-
-        <article id="step-4" class="wizard-step" role="tabpanel" aria-labelledby="step-label-4" aria-hidden="true">
-          <h3 id="step-label-4">Step 4: Overview</h3>
-          <p>Summary of the scan results compared to your selected benchmark.</p>
-          <div class="scanning-summary">
-            <div><span>Overall score</span><span id="overview-score">75%</span></div>
-            <div><span>High risk issues</span><span id="overview-high">4</span></div>
-            <div><span>Medium risk issues</span><span id="overview-medium">12</span></div>
-          </div>
-          <div class="filters" role="group" aria-label="Filter results">
-            <button type="button" class="button btn-secondary">Focus order</button>
-            <button type="button" class="button btn-secondary">Color contrast</button>
-            <button type="button" class="button btn-secondary">Landmarks</button>
-            <button type="button" class="button btn-secondary">Forms</button>
-          </div>
-        </article>
-
-        <article id="step-5" class="wizard-step" role="tabpanel" aria-labelledby="step-label-5" aria-hidden="true">
-          <h3 id="step-label-5">Step 5: Drilldown &amp; Export</h3>
-          <p>Review issues by guideline and select your preferred export format.</p>
-          <ul class="issues-list">
-            <li>
-              <strong>WCAG 2.4.3 Focus Order</strong>
-              <p>Ensure focus order matches the visual order on pricing page.</p>
-            </li>
-            <li>
-              <strong>WCAG 1.4.3 Contrast (Minimum)</strong>
-              <p>Update CTA button colors to meet 4.5:1 contrast ratio.</p>
-            </li>
-            <li>
-              <strong>WCAG 3.3.1 Error Identification</strong>
-              <p>Add inline error messaging to the registration form.</p>
-            </li>
-          </ul>
-          <div class="export-options" role="group" aria-label="Export options">
-            <label><input type="radio" name="export" value="pdf" checked> PDF report</label>
-            <label><input type="radio" name="export" value="csv"> CSV issue log</label>
-            <label><input type="radio" name="export" value="json"> JSON for integrations</label>
-          </div>
-          <button type="button" class="button btn-primary" id="export-btn">Export report</button>
-          <div class="status-log" aria-live="assertive" id="export-status">
-            <p>No export requested yet.</p>
-          </div>
-        </article>
+    <section class="card">
+      <div class="filters-panel" aria-label="Dashboard controls">
+        <div class="filters-group">
+          <label>
+            View by timeframe
+            <select id="timeframe-filter" aria-label="Select timeframe">
+              <option value="week">Current Week</option>
+              <option value="month">Current Month</option>
+              <option value="quarter">Quarter to Date</option>
+            </select>
+          </label>
+          <label>
+            Focus area
+            <select id="domain-filter" aria-label="Select functional focus">
+              <option value="all">All Workstreams</option>
+              <option value="finance">Finance Systems</option>
+              <option value="retail">Retail Commerce</option>
+              <option value="hr">People Operations</option>
+            </select>
+          </label>
+        </div>
+        <div class="filters-group">
+          <label class="toggle">
+            <input type="checkbox" id="automation-toggle" checked>
+            <span>Show automation overlays</span>
+          </label>
+          <button type="button" id="focus-critical" class="button btn-primary">Focus critical tasks</button>
+        </div>
       </div>
+    </section>
 
-      <div class="button-group">
-        <button type="button" class="button btn-secondary" id="prev-btn" disabled>Previous</button>
-        <button type="button" class="button btn-primary" id="next-btn">Next</button>
-      </div>
+    <section class="grid-two">
+      <section class="card" id="workflow-diagram" aria-labelledby="workflow-diagram-title">
+        <h2 id="workflow-diagram-title">Interactive Workflow Diagram</h2>
+        <div class="diagram-wrapper">
+          <svg viewBox="0 0 980 420" role="img" aria-labelledby="workflow-diagram-title">
+            <defs>
+              <linearGradient id="nodeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6366F1"/>
+                <stop offset="100%" stop-color="#7C3AED"/>
+              </linearGradient>
+            </defs>
+            <g>
+              <rect data-node="ingestion" x="40" y="60" width="200" height="80" rx="16" fill="url(#nodeGradient)" opacity="0.9"/>
+              <text x="140" y="105" text-anchor="middle" fill="#fff" font-size="16">Data Ingestion</text>
+              <text x="140" y="125" text-anchor="middle" fill="#cbd5f5" font-size="13">Source systems</text>
+
+              <rect data-node="similarity" x="300" y="40" width="200" height="70" rx="16" fill="#1E293B" stroke="#6366F1" stroke-width="2"/>
+              <text x="400" y="75" text-anchor="middle" fill="#e2e8f0" font-size="15">Similarity Matching</text>
+
+              <rect data-node="merge" x="300" y="150" width="200" height="70" rx="16" fill="#1E293B" stroke="#6366F1" stroke-width="2"/>
+              <text x="400" y="185" text-anchor="middle" fill="#e2e8f0" font-size="15">Merge Duplicates</text>
+
+              <rect data-node="verify" x="300" y="260" width="200" height="70" rx="16" fill="#1E293B" stroke="#6366F1" stroke-width="2"/>
+              <text x="400" y="295" text-anchor="middle" fill="#e2e8f0" font-size="15">Verification</text>
+
+              <rect data-node="tasks" x="560" y="60" width="200" height="80" rx="16" fill="#0f172a" stroke="#14B8A6" stroke-width="2"/>
+              <text x="660" y="95" text-anchor="middle" fill="#5eead4" font-size="16">Task Orchestration</text>
+              <text x="660" y="115" text-anchor="middle" fill="#99f6e4" font-size="12">Create → Depend → Assign</text>
+
+              <rect data-node="quality" x="560" y="200" width="200" height="80" rx="16" fill="#0f172a" stroke="#F59E0B" stroke-width="2"/>
+              <text x="660" y="235" text-anchor="middle" fill="#fbbf24" font-size="16">Quality Assurance</text>
+              <text x="660" y="255" text-anchor="middle" fill="#fde68a" font-size="12">Validate → Flag → Report</text>
+
+              <rect data-node="automation" x="820" y="120" width="140" height="160" rx="18" fill="#1E293B" stroke="#7C3AED" stroke-width="2"/>
+              <text x="890" y="190" text-anchor="middle" fill="#e9d5ff" font-size="15">Automation</text>
+              <text x="890" y="210" text-anchor="middle" fill="#d8b4fe" font-size="11">Triggers & alerts</text>
+
+              <path d="M240 100 H290" stroke="#818cf8" stroke-width="3" marker-end="url(#arrow)"/>
+              <path d="M500 75 H550" stroke="#22d3ee" stroke-width="3" marker-end="url(#arrow)"/>
+              <path d="M500 185 H550" stroke="#22d3ee" stroke-width="3" marker-end="url(#arrow)"/>
+              <path d="M500 295 H550" stroke="#22d3ee" stroke-width="3" marker-end="url(#arrow)"/>
+              <path d="M760 240 H820" stroke="#a855f7" stroke-width="3" marker-end="url(#arrow)"/>
+              <path d="M760 100 H820" stroke="#a855f7" stroke-width="3" marker-end="url(#arrow)"/>
+              <path d="M240 100 C260 220 260 220 300 295" stroke="#818cf8" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+              <path d="M400 330 V370 H890" stroke="#fcd34d" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+            </g>
+            <defs>
+              <marker id="arrow" markerWidth="10" markerHeight="10" refX="10" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#a855f7"/>
+              </marker>
+            </defs>
+          </svg>
+        </div>
+        <div id="workflow-details" class="diagram-info" role="status">Select a stage to explore process telemetry.</div>
+      </section>
+
+      <section class="card" id="schema-diagram" aria-labelledby="schema-diagram-title">
+        <h2 id="schema-diagram-title">Database Schema Visualization</h2>
+        <div class="diagram-wrapper">
+          <svg viewBox="0 0 960 400" role="img" aria-labelledby="schema-diagram-title">
+            <defs>
+              <linearGradient id="tableGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="rgba(99, 102, 241, 0.65)" />
+                <stop offset="100%" stop-color="rgba(124, 58, 237, 0.4)" />
+              </linearGradient>
+            </defs>
+            <g fill="#0f172a" stroke="#475569" stroke-width="1.5">
+              <rect data-node="source-table" x="40" y="40" width="220" height="160" rx="12" fill="#0f172a" />
+              <rect data-node="dedupe-table" x="360" y="20" width="220" height="180" rx="12" fill="#0f172a" />
+              <rect data-node="tasks-table" x="360" y="220" width="260" height="160" rx="12" fill="#0f172a" />
+              <rect data-node="automation-table" x="700" y="120" width="220" height="180" rx="12" fill="#0f172a" />
+            </g>
+
+            <g fill="#e2e8f0" font-size="14">
+              <text x="150" y="65" text-anchor="middle" font-size="16" fill="#fff">Source Data</text>
+              <text x="450" y="45" text-anchor="middle" font-size="16" fill="#fff">Deduplicated Data</text>
+              <text x="490" y="245" text-anchor="middle" font-size="16" fill="#fff">Migration Tasks</text>
+              <text x="810" y="145" text-anchor="middle" font-size="16" fill="#fff">Automation Log</text>
+            </g>
+
+            <g fill="#cbd5f5" font-size="12">
+              <text x="60" y="90">• Record ID</text>
+              <text x="60" y="110">• Source System</text>
+              <text x="60" y="130">• Data Type</text>
+              <text x="60" y="150">• Migration Status</text>
+              <text x="60" y="170">• Priority</text>
+              <text x="60" y="190">• Assigned To</text>
+              <text x="60" y="210">• Created Date</text>
+
+              <text x="380" y="90">• Unique ID</text>
+              <text x="380" y="110">• Merged From</text>
+              <text x="380" y="130">• Deduplication Status</text>
+              <text x="380" y="150">• Match Score</text>
+              <text x="380" y="170">• Verified By</text>
+              <text x="380" y="190">• Verification Date</text>
+
+              <text x="380" y="290">• Task ID</text>
+              <text x="380" y="310">• Task Name</text>
+              <text x="380" y="330">• Description</text>
+              <text x="380" y="350">• Status</text>
+              <text x="380" y="370">• Start / End Date</text>
+              <text x="520" y="290">• Dependencies</text>
+              <text x="520" y="310">• Owner</text>
+
+              <text x="720" y="190">• Log ID</text>
+              <text x="720" y="210">• Automation Name</text>
+              <text x="720" y="230">• Trigger Time</text>
+              <text x="720" y="250">• Status</text>
+              <text x="720" y="270">• Error Message</text>
+              <text x="720" y="290">• Records Processed</text>
+            </g>
+
+            <path d="M260 120 H360" stroke="url(#tableGradient)" stroke-width="3" marker-end="url(#tableArrow)"/>
+            <path d="M470 200 V220" stroke="url(#tableGradient)" stroke-width="3" marker-end="url(#tableArrow)"/>
+            <path d="M580 120 H700" stroke="url(#tableGradient)" stroke-width="3" marker-end="url(#tableArrow)"/>
+            <path d="M590 300 H700" stroke="url(#tableGradient)" stroke-width="3" marker-end="url(#tableArrow)"/>
+
+            <defs>
+              <marker id="tableArrow" markerWidth="10" markerHeight="10" refX="10" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#818cf8"/>
+              </marker>
+            </defs>
+          </svg>
+        </div>
+        <div id="schema-details" class="diagram-info">Click a table to reveal governance notes and downstream consumers.</div>
+      </section>
+    </section>
+
+    <section class="grid-two">
+      <section class="card" id="agent-diagram" aria-labelledby="agent-flow-title">
+        <h2 id="agent-flow-title">Agent Collaboration Flow</h2>
+        <div class="diagram-wrapper">
+          <svg viewBox="0 0 960 320" role="img" aria-labelledby="agent-flow-title">
+            <defs>
+              <linearGradient id="agentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#14B8A6" />
+                <stop offset="100%" stop-color="#22d3ee" />
+              </linearGradient>
+            </defs>
+            <g>
+              <rect data-node="agent-dedupe" x="80" y="80" width="220" height="120" rx="18" fill="#0f172a" stroke="#38bdf8" stroke-width="2" />
+              <rect data-node="agent-orchestrator" x="370" y="40" width="250" height="160" rx="18" fill="#0f172a" stroke="#a855f7" stroke-width="2" />
+              <rect data-node="agent-qa" x="690" y="90" width="220" height="120" rx="18" fill="#0f172a" stroke="#fbbf24" stroke-width="2" />
+
+              <text x="190" y="110" text-anchor="middle" fill="#5eead4" font-size="16">Deduplication Agent</text>
+              <text x="190" y="135" text-anchor="middle" fill="#bae6fd" font-size="12">Analyzes data → Identifies duplicates → Merges records</text>
+
+              <text x="495" y="70" text-anchor="middle" fill="#f0abfc" font-size="16">Migration Orchestrator</text>
+              <text x="495" y="95" text-anchor="middle" fill="#f5d0fe" font-size="12">Creates tasks → Manages dependencies → Assigns workload</text>
+
+              <text x="800" y="120" text-anchor="middle" fill="#facc15" font-size="16">Quality Assurance Agent</text>
+              <text x="800" y="145" text-anchor="middle" fill="#fde68a" font-size="12">Validates data → Flags issues → Reports metrics</text>
+
+              <path d="M300 140 H370" stroke="url(#agentGradient)" stroke-width="3" marker-end="url(#agentArrow)"/>
+              <path d="M620 160 H690" stroke="url(#agentGradient)" stroke-width="3" marker-end="url(#agentArrow)"/>
+              <path d="M690 120 C600 60 420 60 300 120" stroke="#fbbf24" stroke-width="2" stroke-dasharray="6 6" marker-end="url(#qaArrow)"/>
+              <path d="M300 200 C420 260 600 260 690 200" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6 6" marker-end="url(#qaArrow)"/>
+            </g>
+            <defs>
+              <marker id="agentArrow" markerWidth="10" markerHeight="10" refX="10" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#22d3ee"/>
+              </marker>
+              <marker id="qaArrow" markerWidth="10" markerHeight="10" refX="10" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#fbbf24"/>
+              </marker>
+            </defs>
+          </svg>
+        </div>
+        <div id="agent-details" class="diagram-info">Tap an agent to inspect responsibilities, SLAs, and current load.</div>
+      </section>
+
+      <section class="card" aria-labelledby="automation-matrix-title">
+        <h2 id="automation-matrix-title">Automation Trigger Matrix</h2>
+        <div class="legend" role="list" aria-label="Automation legend">
+          <span role="listitem" style="color:#5eead4">Active</span>
+          <span role="listitem" style="color:#facc15">Paused</span>
+        </div>
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th scope="col">Automation</th>
+              <th scope="col">Description</th>
+              <th scope="col">Trigger</th>
+              <th scope="col">Status</th>
+              <th scope="col">Last Triggered</th>
+            </tr>
+          </thead>
+          <tbody id="automation-table-body"></tbody>
+        </table>
+      </section>
+    </section>
+
+    <section class="grid-three" style="margin-top:1.5rem;">
+      <section class="card" aria-labelledby="migration-dashboard-title">
+        <h2 id="migration-dashboard-title">Migration Progress Dashboard</h2>
+        <canvas id="completion-chart" height="160" role="img" aria-label="Migration completion gauge"></canvas>
+        <div class="progress-indicator">
+          <div>
+            <strong>Completion</strong>
+            <span id="completion-label">72% of records migrated</span>
+          </div>
+          <div>
+            <strong>Tasks in flight</strong>
+            <span id="active-tasks-label">28 active</span>
+          </div>
+          <div>
+            <strong>Critical blockers</strong>
+            <span id="blockers-label">3 dependencies</span>
+          </div>
+        </div>
+        <canvas id="tasks-status-chart" height="180" role="img" aria-label="Tasks by status"></canvas>
+        <div class="gantt-track" aria-label="Migration Gantt chart timeline">
+          <div class="gantt-row" data-task="data-prep">
+            <span class="gantt-label">Data Prep</span>
+            <div class="gantt-bar" data-status="Completed"><span></span></div>
+          </div>
+          <div class="gantt-row" data-task="dedupe">
+            <span class="gantt-label">Deduplication</span>
+            <div class="gantt-bar" data-status="In Progress"><span></span></div>
+          </div>
+          <div class="gantt-row" data-task="migration">
+            <span class="gantt-label">Migration</span>
+            <div class="gantt-bar" data-status="In Progress"><span></span></div>
+          </div>
+          <div class="gantt-row" data-task="qa">
+            <span class="gantt-label">Quality Checks</span>
+            <div class="gantt-bar" data-status="Blocked"><span></span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="quality-dashboard-title">
+        <h2 id="quality-dashboard-title">Data Quality Dashboard</h2>
+        <canvas id="dedupe-chart" height="160" role="img" aria-label="Deduplication metrics"></canvas>
+        <div class="validation-results">
+          <div>
+            <strong style="color:#5eead4; display:block;">Validation Results</strong>
+            <span id="validation-summary">94% of migrated records validated successfully.</span>
+          </div>
+          <div>
+            <strong style="color:#fde68a; display:block;">Flagged Issues</strong>
+            <span id="flagged-issues">7 anomalies pending review.</span>
+          </div>
+        </div>
+        <canvas id="error-rate-chart" height="180" role="img" aria-label="Quality error rates"></canvas>
+      </section>
+
+      <section class="card" aria-labelledby="team-dashboard-title">
+        <h2 id="team-dashboard-title">Team Performance Dashboard</h2>
+        <canvas id="team-performance-chart" height="180" role="img" aria-label="Team workload distribution"></canvas>
+        <div class="team-metrics">
+          <div><span>Tasks completed this period</span><strong id="tasks-completed">138</strong></div>
+          <div><span>Average completion time</span><strong id="avg-completion">6.4 hrs</strong></div>
+          <div><span>Round-robin balance</span><strong id="round-robin">92% equitable</strong></div>
+        </div>
+      </section>
     </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.5/dist/chart.umd.min.js" integrity="sha384-lFqsSVqSdz+CA0nVddOZXScexa9N02dtubZCHXg1h7Z7l1ZXTwe+huj0vMrDXSUp" crossorigin="anonymous"></script>
   <script>
-    const steps = Array.from(document.querySelectorAll('.wizard-step'));
-    const stepButtons = Array.from(document.querySelectorAll('.stepper button'));
-    const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
-    const statusLog = document.getElementById('export-status');
-    const exportBtn = document.getElementById('export-btn');
-    const scanTimer = document.getElementById('scan-timer');
-    const pagesQueued = document.getElementById('pages-queued');
-    const criticalErrors = document.getElementById('critical-errors');
-    const warningCount = document.getElementById('warning-count');
+    const workflowDescriptions = {
+      ingestion: 'Ingesting 12 source feeds (CRM, ERP, POS, HRIS) with schema harmonization, timezone normalization, and SLA monitoring.',
+      similarity: 'Running cosine similarity and fuzzy match scoring across 4.3M candidate pairs. Adaptive thresholds tuned per source system.',
+      merge: 'Auto-merging 8,420 duplicate clusters with survivorship rules, lineage capture, and rollback checkpoints.',
+      verify: 'Sampling merged entities, escalating low-confidence merges to QA, and capturing steward sign-off in the audit log.',
+      tasks: 'Orchestrating 214 active migration tasks with dependency-aware scheduling, swimlane assignments, and burndown analytics.',
+      quality: 'Executing 36 validation suites, cross-checking referential integrity, monitoring data drift, and issuing remediation tickets.',
+      automation: 'Coordinating automation triggers: round-robin assignment, validation kickoffs, alerting, and daily health reports.'
+    };
 
-    let currentStep = 0;
-    let scanInterval;
+    const schemaDescriptions = {
+      'source-table': 'Authoritative landing zone. Records tagged with source lineage, priority, and owner to enable SLA dashboards and dedupe queues.',
+      'dedupe-table': 'Single customer view. Stores merged record provenance, match confidence, and QA verification metrics for stewardship reporting.',
+      'tasks-table': 'Work management ledger powering orchestration. Tracks dependencies, timelines, and owners for cross-team accountability.',
+      'automation-table': 'Audit trail for bots. Captures trigger outcomes, error payloads, and throughput for observability and regression insights.'
+    };
 
-    function setStep(newStep, options = {}) {
-      const { focusPanel = false } = options;
-      if (newStep < 0 || newStep >= steps.length) return;
+    const agentDescriptions = {
+      'agent-dedupe': 'Deduplication Agent currently processing 18k records/hr with 97.2% precision. SLA: triage flagged merges within 4 hours.',
+      'agent-orchestrator': 'Migration Orchestrator sequencing 62 task bundles. SLA: resolve dependency conflicts in under 30 minutes.',
+      'agent-qa': 'QA Agent validating 1.2k records/hr. SLA: publish daily defect density report by 17:00 UTC.'
+    };
 
-      if (scanInterval && newStep !== 2) {
-        clearInterval(scanInterval);
-        scanInterval = undefined;
+    const automationMatrix = [
+      {
+        id: 'auto-dedupe',
+        name: 'Auto-deduplicate on new record creation',
+        description: 'Invokes similarity scoring and merges candidates within 15 minutes of arrival.',
+        trigger: 'New record webhook',
+        status: 'Active',
+        lastTriggered: '12 minutes ago'
+      },
+      {
+        id: 'round-robin',
+        name: 'Round-robin task assignment',
+        description: 'Balances workload across migration squads every hour using skill tags.',
+        trigger: 'Hourly scheduler',
+        status: 'Active',
+        lastTriggered: '27 minutes ago'
+      },
+      {
+        id: 'daily-report',
+        name: 'Daily migration status report',
+        description: 'Generates executive-ready scorecards and pushes to Slack + email.',
+        trigger: '07:00 UTC daily',
+        status: 'Active',
+        lastTriggered: 'Today at 07:01'
+      },
+      {
+        id: 'failed-alert',
+        name: 'Failed migration alert',
+        description: 'Immediate alert with rollback instructions when a task fails twice.',
+        trigger: 'Task failure event',
+        status: 'Paused',
+        lastTriggered: 'Yesterday 22:14'
+      },
+      {
+        id: 'post-validate',
+        name: 'Automatic post-migration validation',
+        description: 'Runs data validation suites and attaches QA summary to the task.',
+        trigger: 'Task completion',
+        status: 'Active',
+        lastTriggered: '42 minutes ago'
       }
+    ];
 
-      steps.forEach((panel, index) => {
-        const isActive = index === newStep;
-        panel.classList.toggle('active', isActive);
-        panel.setAttribute('aria-hidden', String(!isActive));
-      });
-
-      stepButtons.forEach((btn, index) => {
-        const isActive = index === newStep;
-        btn.classList.toggle('active', isActive);
-        if (isActive) {
-          btn.setAttribute('aria-current', 'step');
-        } else {
-          btn.removeAttribute('aria-current');
-        }
-      });
-
-      prevBtn.disabled = newStep === 0;
-      nextBtn.textContent = newStep === steps.length - 1 ? 'Finish' : 'Next';
-      currentStep = newStep;
-
-      if (focusPanel) {
-        const focusable = steps[newStep].querySelector(
-          'input, select, textarea, button, [tabindex]'
-        );
-        if (focusable) {
-          focusable.focus({ preventScroll: true });
-        }
-      }
-    }
-
-    function handleStepperClick(event) {
-      const target = event.target.closest('button[data-step]');
-      if (!target) return;
-      const targetStep = parseInt(target.dataset.step, 10) - 1;
-      setStep(targetStep, { focusPanel: true });
-      if (targetStep === 2) {
-        simulateScanProgress();
-      }
-    }
-
-    function simulateScanProgress() {
-      scanTimer.textContent = '45';
-      pagesQueued.textContent = '18';
-      criticalErrors.textContent = '0';
-      warningCount.textContent = '0';
-
-      let timeRemaining = 45;
-      let queued = 18;
-
-      clearInterval(scanInterval);
-      scanInterval = setInterval(() => {
-        if (timeRemaining > 0) {
-          timeRemaining -= 1;
-          scanTimer.textContent = String(timeRemaining);
-          if (queued > 0 && timeRemaining % 5 === 0) {
-            queued -= 2;
-            pagesQueued.textContent = String(Math.max(queued, 0));
+    const datasets = {
+      week: {
+        all: {
+          completion: 0.72,
+          activeTasks: 28,
+          blockers: 3,
+          tasksStatus: [18, 9, 6, 2],
+          gantt: {
+            'data-prep': { start: 0, width: 100 },
+            dedupe: { start: 20, width: 60 },
+            migration: { start: 35, width: 50 },
+            qa: { start: 55, width: 30 }
+          },
+          dedupe: [62, 24, 9, 5],
+          validationSuccess: '94% of migrated records validated successfully.',
+          flagged: '7 anomalies pending review.',
+          errors: [1.8, 1.2, 0.9, 1.1, 0.7, 0.6, 0.8],
+          teams: {
+            labels: ['Squad Atlas', 'Squad Nova', 'Squad Helix'],
+            completed: [54, 46, 38],
+            inProgress: [18, 21, 16],
+            backlog: [6, 4, 9],
+            tasksCompleted: 138,
+            avgCompletion: '6.4 hrs',
+            roundRobin: '92% equitable'
           }
-          if (timeRemaining % 9 === 0) {
-            warningCount.textContent = String(parseInt(warningCount.textContent, 10) + 1);
+        },
+        finance: {
+          completion: 0.66,
+          activeTasks: 12,
+          blockers: 1,
+          tasksStatus: [9, 5, 3, 1],
+          gantt: {
+            'data-prep': { start: 0, width: 100 },
+            dedupe: { start: 30, width: 55 },
+            migration: { start: 45, width: 45 },
+            qa: { start: 70, width: 25 }
+          },
+          dedupe: [48, 32, 12, 8],
+          validationSuccess: '91% of finance records validated.',
+          flagged: '5 anomalies pending review.',
+          errors: [2.1, 1.7, 1.1, 1.3, 1.0, 0.9, 1.2],
+          teams: {
+            labels: ['Squad Atlas', 'Squad Nova'],
+            completed: [32, 28],
+            inProgress: [9, 7],
+            backlog: [2, 3],
+            tasksCompleted: 74,
+            avgCompletion: '7.1 hrs',
+            roundRobin: '88% equitable'
           }
-        } else {
-          clearInterval(scanInterval);
-          criticalErrors.textContent = '2';
-          warningCount.textContent = '6';
-          pagesQueued.textContent = '0';
-          setTimeout(() => setStep(3, { focusPanel: true }), 400);
+        },
+        retail: {
+          completion: 0.78,
+          activeTasks: 9,
+          blockers: 0,
+          tasksStatus: [7, 3, 1, 0],
+          gantt: {
+            'data-prep': { start: 0, width: 100 },
+            dedupe: { start: 15, width: 65 },
+            migration: { start: 35, width: 55 },
+            qa: { start: 50, width: 35 }
+          },
+          dedupe: [68, 20, 7, 5],
+          validationSuccess: '97% of retail records validated.',
+          flagged: '2 anomalies pending review.',
+          errors: [1.2, 0.9, 0.7, 0.6, 0.5, 0.4, 0.4],
+          teams: {
+            labels: ['Squad Helix'],
+            completed: [42],
+            inProgress: [11],
+            backlog: [4],
+            tasksCompleted: 42,
+            avgCompletion: '5.1 hrs',
+            roundRobin: '95% equitable'
+          }
+        },
+        hr: {
+          completion: 0.58,
+          activeTasks: 7,
+          blockers: 2,
+          tasksStatus: [4, 6, 2, 1],
+          gantt: {
+            'data-prep': { start: 0, width: 80 },
+            dedupe: { start: 20, width: 45 },
+            migration: { start: 45, width: 40 },
+            qa: { start: 65, width: 20 }
+          },
+          dedupe: [52, 28, 12, 8],
+          validationSuccess: '88% of HR records validated.',
+          flagged: '9 anomalies pending review.',
+          errors: [2.5, 2.1, 1.8, 1.6, 1.5, 1.3, 1.2],
+          teams: {
+            labels: ['Squad Nova'],
+            completed: [28],
+            inProgress: [14],
+            backlog: [8],
+            tasksCompleted: 28,
+            avgCompletion: '7.8 hrs',
+            roundRobin: '84% equitable'
+          }
         }
-      }, 1000);
+      },
+      month: {
+        all: {
+          completion: 0.63,
+          activeTasks: 96,
+          blockers: 12,
+          tasksStatus: [64, 42, 18, 12],
+          gantt: {
+            'data-prep': { start: 0, width: 100 },
+            dedupe: { start: 10, width: 75 },
+            migration: { start: 30, width: 65 },
+            qa: { start: 50, width: 45 }
+          },
+          dedupe: [58, 26, 10, 6],
+          validationSuccess: '92% validated this month.',
+          flagged: '24 anomalies pending review.',
+          errors: [2.8, 2.4, 2.0, 1.9, 1.7, 1.5, 1.4, 1.6, 1.7, 1.5, 1.3, 1.2],
+          teams: {
+            labels: ['Squad Atlas', 'Squad Nova', 'Squad Helix'],
+            completed: [148, 132, 117],
+            inProgress: [44, 51, 47],
+            backlog: [18, 16, 21],
+            tasksCompleted: 397,
+            avgCompletion: '7.2 hrs',
+            roundRobin: '89% equitable'
+          }
+        },
+        finance: {
+          completion: 0.57,
+          activeTasks: 36,
+          blockers: 5,
+          tasksStatus: [22, 18, 9, 5],
+          gantt: {
+            'data-prep': { start: 0, width: 100 },
+            dedupe: { start: 15, width: 65 },
+            migration: { start: 40, width: 60 },
+            qa: { start: 60, width: 40 }
+          },
+          dedupe: [46, 30, 14, 10],
+          validationSuccess: '89% validated for finance.',
+          flagged: '12 anomalies pending review.',
+          errors: [3.2, 2.9, 2.5, 2.3, 2.2, 2.1, 2.0, 1.8, 1.7, 1.6, 1.5, 1.5],
+          teams: {
+            labels: ['Squad Atlas', 'Squad Nova'],
+            completed: [96, 82],
+            inProgress: [28, 24],
+            backlog: [9, 11],
+            tasksCompleted: 178,
+            avgCompletion: '7.9 hrs',
+            roundRobin: '86% equitable'
+          }
+        },
+        retail: {
+          completion: 0.71,
+          activeTasks: 22,
+          blockers: 3,
+          tasksStatus: [18, 12, 4, 2],
+          gantt: {
+            'data-prep': { start: 0, width: 100 },
+            dedupe: { start: 12, width: 78 },
+            migration: { start: 35, width: 70 },
+            qa: { start: 55, width: 45 }
+          },
+          dedupe: [64, 24, 8, 4],
+          validationSuccess: '95% validated for retail.',
+          flagged: '6 anomalies pending review.',
+          errors: [2.3, 2.0, 1.6, 1.5, 1.4, 1.2, 1.1, 1.1, 1.0, 0.9, 0.9, 0.8],
+          teams: {
+            labels: ['Squad Helix'],
+            completed: [112],
+            inProgress: [32],
+            backlog: [12],
+            tasksCompleted: 112,
+            avgCompletion: '6.1 hrs',
+            roundRobin: '91% equitable'
+          }
+        },
+        hr: {
+          completion: 0.49,
+          activeTasks: 18,
+          blockers: 4,
+          tasksStatus: [12, 12, 5, 4],
+          gantt: {
+            'data-prep': { start: 0, width: 90 },
+            dedupe: { start: 20, width: 55 },
+            migration: { start: 45, width: 45 },
+            qa: { start: 65, width: 35 }
+          },
+          dedupe: [44, 30, 16, 10],
+          validationSuccess: '85% validated for HR.',
+          flagged: '28 anomalies pending review.',
+          errors: [3.4, 3.1, 2.8, 2.6, 2.5, 2.3, 2.2, 2.1, 2.0, 1.9, 1.8, 1.7],
+          teams: {
+            labels: ['Squad Nova'],
+            completed: [76],
+            inProgress: [29],
+            backlog: [14],
+            tasksCompleted: 76,
+            avgCompletion: '8.4 hrs',
+            roundRobin: '81% equitable'
+          }
+        }
+      },
+      quarter: {
+        all: {
+          completion: 0.54,
+          activeTasks: 148,
+          blockers: 18,
+          tasksStatus: [102, 66, 24, 18],
+          gantt: {
+            'data-prep': { start: 0, width: 100 },
+            dedupe: { start: 8, width: 80 },
+            migration: { start: 25, width: 75 },
+            qa: { start: 45, width: 55 }
+          },
+          dedupe: [55, 28, 11, 6],
+          validationSuccess: '89% validated quarter-to-date.',
+          flagged: '54 anomalies pending review.',
+          errors: [3.6, 3.4, 3.0, 2.8, 2.6, 2.5, 2.4, 2.2, 2.1, 2.0, 1.9, 1.8],
+          teams: {
+            labels: ['Squad Atlas', 'Squad Nova', 'Squad Helix'],
+            completed: [226, 198, 182],
+            inProgress: [78, 86, 74],
+            backlog: [32, 28, 40],
+            tasksCompleted: 606,
+            avgCompletion: '7.8 hrs',
+            roundRobin: '87% equitable'
+          }
+        },
+        finance: {
+          completion: 0.49,
+          activeTasks: 64,
+          blockers: 8,
+          tasksStatus: [42, 30, 14, 8],
+          gantt: {
+            'data-prep': { start: 0, width: 100 },
+            dedupe: { start: 12, width: 75 },
+            migration: { start: 35, width: 70 },
+            qa: { start: 58, width: 48 }
+          },
+          dedupe: [42, 32, 18, 8],
+          validationSuccess: '84% validated for finance.',
+          flagged: '31 anomalies pending review.',
+          errors: [3.9, 3.6, 3.4, 3.2, 3.1, 3.0, 2.9, 2.8, 2.6, 2.5, 2.4, 2.3],
+          teams: {
+            labels: ['Squad Atlas', 'Squad Nova'],
+            completed: [162, 140],
+            inProgress: [56, 48],
+            backlog: [20, 18],
+            tasksCompleted: 302,
+            avgCompletion: '8.5 hrs',
+            roundRobin: '84% equitable'
+          }
+        },
+        retail: {
+          completion: 0.61,
+          activeTasks: 46,
+          blockers: 4,
+          tasksStatus: [38, 18, 6, 4],
+          gantt: {
+            'data-prep': { start: 0, width: 100 },
+            dedupe: { start: 10, width: 82 },
+            migration: { start: 30, width: 78 },
+            qa: { start: 55, width: 52 }
+          },
+          dedupe: [60, 24, 9, 7],
+          validationSuccess: '92% validated for retail.',
+          flagged: '14 anomalies pending review.',
+          errors: [3.2, 2.9, 2.6, 2.5, 2.3, 2.1, 1.9, 1.8, 1.7, 1.6, 1.5, 1.4],
+          teams: {
+            labels: ['Squad Helix'],
+            completed: [204],
+            inProgress: [64],
+            backlog: [28],
+            tasksCompleted: 204,
+            avgCompletion: '6.9 hrs',
+            roundRobin: '90% equitable'
+          }
+        },
+        hr: {
+          completion: 0.41,
+          activeTasks: 38,
+          blockers: 6,
+          tasksStatus: [22, 24, 8, 6],
+          gantt: {
+            'data-prep': { start: 0, width: 88 },
+            dedupe: { start: 18, width: 60 },
+            migration: { start: 46, width: 54 },
+            qa: { start: 70, width: 46 }
+          },
+          dedupe: [40, 30, 18, 12],
+          validationSuccess: '81% validated for HR.',
+          flagged: '32 anomalies pending review.',
+          errors: [4.2, 3.9, 3.6, 3.4, 3.2, 3.0, 2.9, 2.7, 2.6, 2.4, 2.3, 2.2],
+          teams: {
+            labels: ['Squad Nova'],
+            completed: [140],
+            inProgress: [48],
+            backlog: [26],
+            tasksCompleted: 140,
+            avgCompletion: '9.1 hrs',
+            roundRobin: '80% equitable'
+          }
+        }
+      }
+    };
+
+    function populateAutomationTable() {
+      const tbody = document.getElementById('automation-table-body');
+      tbody.innerHTML = '';
+      automationMatrix.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <th scope="row">${item.name}</th>
+          <td>${item.description}</td>
+          <td>${item.trigger}</td>
+          <td class="status">
+            <span class="status-pill ${item.status === 'Active' ? 'status-active' : 'status-paused'}">
+              ${item.status}
+            </span>
+          </td>
+          <td>
+            <time datetime="${item.lastTriggered}">${item.lastTriggered}</time>
+          </td>`;
+        row.tabIndex = 0;
+        row.setAttribute('role', 'button');
+        row.setAttribute('aria-label', `${item.name} automation status`);
+        row.addEventListener('click', () => {
+          const toggle = document.getElementById('automation-toggle');
+          if (!toggle.checked) return;
+          const highlight = row.querySelector('.status-pill');
+          highlight.classList.toggle('status-active');
+          highlight.classList.toggle('status-paused');
+          highlight.textContent = highlight.classList.contains('status-active') ? 'Active' : 'Paused';
+        });
+        row.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            row.click();
+          }
+        });
+        tbody.appendChild(row);
+      });
     }
 
-    function handleNext() {
-      if (currentStep === 1) {
-        setStep(currentStep + 1, { focusPanel: true });
-        simulateScanProgress();
-        return;
-      }
-
-      if (currentStep < steps.length - 1) {
-        setStep(currentStep + 1, { focusPanel: true });
-      } else {
-        statusLog.innerHTML = '<p>Wizard complete. Ready to export or restart.</p>';
-      }
+    function configureDiagramInteractions(containerSelector, descriptions, outputId) {
+      const container = document.querySelector(containerSelector);
+      if (!container) return;
+      container.querySelectorAll('[data-node]').forEach(node => {
+        node.addEventListener('click', () => {
+          container.querySelectorAll('.active-diagram-node').forEach(n => n.classList.remove('active-diagram-node'));
+          node.classList.add('active-diagram-node');
+          const id = node.getAttribute('data-node');
+          document.getElementById(outputId).textContent = descriptions[id] || 'No telemetry available.';
+        });
+      });
     }
 
-    function handlePrev() {
-      if (currentStep > 0) {
-        setStep(currentStep - 1, { focusPanel: true });
-      }
+    function applyGanttData(ganttData) {
+      document.querySelectorAll('.gantt-row').forEach(row => {
+        const taskId = row.getAttribute('data-task');
+        const bar = row.querySelector('.gantt-bar span');
+        const task = ganttData[taskId];
+        if (!task) return;
+        bar.style.left = `${task.start}%`;
+        bar.style.width = `${task.width}%`;
+      });
     }
 
-    function handleExport() {
-      statusLog.innerHTML = '<p>Preparing your report…</p>';
+    function updateDashboard() {
+      const timeframe = document.getElementById('timeframe-filter').value;
+      const domain = document.getElementById('domain-filter').value;
+      const data = datasets[timeframe][domain];
+      const completionPct = Math.round(data.completion * 100);
+
+      completionChart.data.datasets[0].data = [completionPct, 100 - completionPct];
+      completionChart.update();
+
+      document.getElementById('completion-label').textContent = `${completionPct}% of records migrated`;
+      document.getElementById('active-tasks-label').textContent = `${data.activeTasks} active`;
+      document.getElementById('blockers-label').textContent = `${data.blockers} dependencies`;
+
+      tasksStatusChart.data.datasets[0].data = data.tasksStatus;
+      tasksStatusChart.update();
+
+      applyGanttData(data.gantt);
+
+      dedupeChart.data.datasets[0].data = data.dedupe;
+      dedupeChart.update();
+
+      document.getElementById('validation-summary').textContent = data.validationSuccess;
+      document.getElementById('flagged-issues').textContent = data.flagged;
+
+      const errorLabels = Array.from({ length: data.errors.length }, (_, i) => `Day ${i + 1}`);
+      errorRateChart.data.labels = errorLabels;
+      errorRateChart.data.datasets[0].data = data.errors;
+      errorRateChart.update();
+
+      teamPerformanceChart.data.labels = data.teams.labels;
+      teamPerformanceChart.data.datasets[0].data = data.teams.completed;
+      teamPerformanceChart.data.datasets[1].data = data.teams.inProgress;
+      teamPerformanceChart.data.datasets[2].data = data.teams.backlog;
+      teamPerformanceChart.update();
+
+      document.getElementById('tasks-completed').textContent = data.teams.tasksCompleted;
+      document.getElementById('avg-completion').textContent = data.teams.avgCompletion;
+      document.getElementById('round-robin').textContent = data.teams.roundRobin;
+    }
+
+    const completionChart = new Chart(document.getElementById('completion-chart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Migrated', 'Remaining'],
+        datasets: [{
+          data: [72, 28],
+          backgroundColor: ['#6366F1', 'rgba(148, 163, 184, 0.25)'],
+          borderWidth: 0,
+          cutout: '70%'
+        }]
+      },
+      options: {
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => `${ctx.label}: ${ctx.formattedValue}%`
+            }
+          }
+        }
+      }
+    });
+
+    const tasksStatusChart = new Chart(document.getElementById('tasks-status-chart'), {
+      type: 'bar',
+      data: {
+        labels: ['Completed', 'In Progress', 'Ready', 'Blocked'],
+        datasets: [{
+          label: 'Tasks',
+          data: [18, 9, 6, 2],
+          backgroundColor: ['#14B8A6', '#6366F1', '#38bdf8', '#EF4444'],
+          borderRadius: 10,
+          maxBarThickness: 36
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: true }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: '#cbd5f5' }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#cbd5f5' },
+            grid: { color: 'rgba(148, 163, 184, 0.2)' }
+          }
+        }
+      }
+    });
+
+    const dedupeChart = new Chart(document.getElementById('dedupe-chart'), {
+      type: 'pie',
+      data: {
+        labels: ['Merged', 'Pending Review', 'Escalated', 'Outliers'],
+        datasets: [{
+          data: [62, 24, 9, 5],
+          backgroundColor: ['#14B8A6', '#6366F1', '#F59E0B', '#EF4444'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: '#cbd5f5' }
+          }
+        }
+      }
+    });
+
+    const errorRateChart = new Chart(document.getElementById('error-rate-chart'), {
+      type: 'line',
+      data: {
+        labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+        datasets: [{
+          label: 'Error rate (%)',
+          data: [1.8, 1.2, 0.9, 1.1, 0.7, 0.6, 0.8],
+          borderColor: '#facc15',
+          backgroundColor: 'rgba(250, 204, 21, 0.2)',
+          tension: 0.35,
+          fill: true,
+          pointRadius: 4,
+          pointBackgroundColor: '#fde68a'
+        }]
+      },
+      options: {
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#cbd5f5' },
+            grid: { color: 'rgba(148, 163, 184, 0.2)' }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#cbd5f5' },
+            grid: { color: 'rgba(148, 163, 184, 0.2)' }
+          }
+        }
+      }
+    });
+
+    const teamPerformanceChart = new Chart(document.getElementById('team-performance-chart'), {
+      type: 'bar',
+      data: {
+        labels: ['Squad Atlas', 'Squad Nova', 'Squad Helix'],
+        datasets: [
+          {
+            label: 'Completed',
+            data: [54, 46, 38],
+            backgroundColor: '#14B8A6',
+            borderRadius: 8,
+            stack: 'combined'
+          },
+          {
+            label: 'In Progress',
+            data: [18, 21, 16],
+            backgroundColor: '#6366F1',
+            borderRadius: 8,
+            stack: 'combined'
+          },
+          {
+            label: 'Backlog',
+            data: [6, 4, 9],
+            backgroundColor: '#F59E0B',
+            borderRadius: 8,
+            stack: 'combined'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: '#cbd5f5' }
+          }
+        },
+        scales: {
+          x: {
+            stacked: true,
+            ticks: { color: '#cbd5f5' },
+            grid: { display: false }
+          },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            ticks: { color: '#cbd5f5' },
+            grid: { color: 'rgba(148, 163, 184, 0.2)' }
+          }
+        }
+      }
+    });
+
+    document.getElementById('timeframe-filter').addEventListener('change', updateDashboard);
+    document.getElementById('domain-filter').addEventListener('change', updateDashboard);
+
+    document.getElementById('focus-critical').addEventListener('click', () => {
+      const qaRow = document.querySelector('.gantt-row[data-task="qa"] .gantt-bar span');
+      qaRow.classList.add('pulse');
+      qaRow.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.5)';
       setTimeout(() => {
-        statusLog.innerHTML = '<p>✅ Export complete. Your PDF report is ready!</p>';
-      }, 1200);
-    }
+        qaRow.classList.remove('pulse');
+        qaRow.style.boxShadow = '';
+      }, 2500);
+    });
 
-    prevBtn.addEventListener('click', handlePrev);
-    nextBtn.addEventListener('click', handleNext);
-    exportBtn.addEventListener('click', handleExport);
-    document.querySelector('.stepper').addEventListener('click', handleStepperClick);
+    populateAutomationTable();
+    configureDiagramInteractions('#workflow-diagram', workflowDescriptions, 'workflow-details');
+    configureDiagramInteractions('#schema-diagram', schemaDescriptions, 'schema-details');
+    configureDiagramInteractions('#agent-diagram', agentDescriptions, 'agent-details');
 
-    setStep(currentStep, { focusPanel: true });
+    updateDashboard();
   </script>
 </body>
 </html>
